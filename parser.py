@@ -22,13 +22,10 @@ class Parser:
                 )
             return (
                 string[: match.start()].strip(),
-                string[match.start() :].strip(),
+                string[match.start():].strip(),
             )
         else:
-            return (
-                string.strip(),
-                "",
-            )
+            return (string.strip(), "")
 
     @staticmethod
     def _get_hub_by_name(name: str, hubs: list[Hub]) -> Hub | None:

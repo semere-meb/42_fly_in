@@ -10,3 +10,7 @@ def main() -> None:
 
     with open("dump.json", mode="w") as out:
         out.write(map.model_dump_json(indent=4))
+
+
+if __name__ == "__main__":
+    main()
