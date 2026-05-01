@@ -30,8 +30,8 @@ class Hub(BaseModel):
 class Connection(BaseModel):
     """ """
 
-    hubs: list[Hub] = Field(le=2, ge=2)
-    max_links: int = Field(default=1)
+    hubs: list[Hub] = Field(min_length=2, max_length=2)
+    capacity: int = Field(default=1)
 
 
 class Map(BaseModel):
