@@ -22,7 +22,7 @@ class Parser:
                 )
             return (
                 string[: match.start()].strip(),
-                string[match.start():].strip(),
+                string[match.start() :].strip(),
             )
         else:
             return (string.strip(), "")
