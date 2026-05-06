@@ -1,5 +1,7 @@
+from graph import Graph
 from models import Map
 from parser import Parser
+from visualizer import Visualizer
 
 
 def main() -> None:
@@ -8,8 +10,11 @@ def main() -> None:
     parser.parse_args()
     map: Map = parser.parse_map()
 
-    with open("dump.json", mode="w") as out:
-        out.write(map.model_dump_json(indent=4))
+    graph = Graph(map)
+    # dist = graph.dijkstra(map.start.name)
+
+    vis = Visualizer(map, graph)
+    vis.run()
 
 
 if __name__ == "__main__":
