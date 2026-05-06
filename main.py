@@ -1,5 +1,3 @@
-import arcade
-
 from graph import Graph
 from models import Map
 from parser import Parser
@@ -16,8 +14,7 @@ def main() -> None:
     # dist = graph.dijkstra(map.start.name)
 
     vis = Visualizer(map, graph)
-    vis.setup()
-    arcade.run()
+    vis.run()
 
 
 if __name__ == "__main__":
