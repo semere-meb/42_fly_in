@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from constants import inf
 from errors import ParseError
 from models import Connection, Hub, Map, Zone
 
@@ -227,7 +228,10 @@ class Parser:
             else:
                 raise ParseError(f"{ln}, Hub '{hub_name}' not found.")
 
-        if self._check_duplicate_connection(connections, hub1_name, hub2_name):
+        if any(
+            set(conn_hubs) == set([hub.name for hub in conn.hubs])
+            for conn in connections
+        ):
             raise ParseError(
                 f"{ln}, Duplicate connection definition: '{hubs_str}'"
             )
@@ -255,18 +259,25 @@ class Parser:
         if capacity <= 0:
             raise ParseError(f"{ln}, Negative value not allowed.")
 
+        Parser.add_adj(*conn_hubs)
+
         try:
-            return Connection(hubs=conn_hubs, capacity=capacity)
+            return Connection(
+                hubs=tuple(conn_hubs), max_link_capacity=capacity
+            )
         except ValidationError as e:
             raise ParseError(f"{ln}, Validation error '{e}'") from e
 
-    def _check_duplicate_connection(
-        self,
-        connections: list[Connection],
-        hub1_name: str,
-        hub2_name: str,
-    ) -> bool:
-        return any(
-            set([hub1_name, hub2_name]) == set([hub.name for hub in conn.hubs])
-            for conn in connections
-        )
+    @staticmethod
+    def add_adj(hub1: Hub, hub2: Hub) -> None:
+        for src, dest in [(hub1, hub2), (hub2, hub1)]:
+            if dest.zone == Zone.PRIORITY:
+                weight = 1
+            elif dest.zone == Zone.NORMAL:
+                weight = 1.1
+            elif dest.zone == Zone.RESTRICTED:
+                weight = 2
+            elif dest.zone == Zone.BLOCKED:
+                weight = inf
+
+            src.adj[dest] = weight
