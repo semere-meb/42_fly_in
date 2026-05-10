@@ -1,3 +1,1 @@
-import sys
-
-inf: int = sys.maxsize
+HUBSPRITE_SIZE = 40

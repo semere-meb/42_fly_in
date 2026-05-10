@@ -1,7 +1,7 @@
 STUBS_DIR := stubs
 TEST_DIR := tests
 
-SRC :=  constants.py errors.py graph.py main.py models.py parser.py visualizer.py
+SRC :=  *.py
 VENV := .venv
 
 run: install

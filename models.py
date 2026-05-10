@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple
+from typing import Tuple, List
 
 from pydantic import BaseModel, Field
 
@@ -25,7 +25,7 @@ class Hub(BaseModel):
 
     zone: Zone = Field(default=Zone.NORMAL)
     max_drones: int = Field(default=1)
-    color: str
+    color: Tuple[int, int, int, int]
 
     # adjacency list
     adj: dict["Hub", float] = {}
@@ -44,10 +44,16 @@ class Connection(BaseModel):
         return hash(self.hubs)
 
 
+class Drone(BaseModel):
+    hub: Hub
+    path: List[Hub] = Field(default=[])
+
+
 class Map(BaseModel):
     """ """
 
     nb_drones: int
+    drones: List[Drone] = Field(default=[])
 
     start: Hub
     end: Hub

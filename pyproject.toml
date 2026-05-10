@@ -1,12 +1,13 @@
 [project]
 name = "fly-in"
-version = "0.1.2"
+version = "1.4"
 description = "Efficient drone fleet routing simulator under constraints."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "arcade>=3.3.3",
     "pydantic>=2.13.2",
+    "webcolors>=25.10.0",
 ]
 
 [dependency-groups]

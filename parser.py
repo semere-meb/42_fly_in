@@ -2,11 +2,11 @@ import re
 from argparse import ArgumentParser
 from pathlib import Path
 
+import webcolors
 from pydantic import ValidationError
 
-from constants import inf
 from errors import ParseError
-from models import Connection, Hub, Map, Zone
+from models import Connection, Drone, Hub, Map, Zone
 
 
 class Parser:
@@ -125,6 +125,7 @@ class Parser:
             end=end_hub,
             hubs=hubs,
             connections=connections,
+            drones=[Drone(hub=start_hub) for _ in range(nb_drones)],
         )
 
     def parse_hub(
@@ -135,7 +136,7 @@ class Parser:
         is_end: bool = False,
     ) -> Hub:
         zone = Zone.NORMAL
-        color = "blue"
+        color = 255, 255, 255, 255
         max_drones = 1
 
         try:
@@ -169,7 +170,11 @@ class Parser:
                     raise ParseError(f"{ln}, Invalid value '{val}' for 'zone'")
 
             elif key == "color":
-                color = val
+                try:
+                    color_name = webcolors.name_to_rgb(val)
+                    color = (*color_name, 255)
+                except ValueError:
+                    print("Color not recognized, defaulting to blue.")
 
             elif key == "max_drones":
                 try:
@@ -259,7 +264,7 @@ class Parser:
         if capacity <= 0:
             raise ParseError(f"{ln}, Negative value not allowed.")
 
-        Parser.add_adj(*conn_hubs)
+        Parser.add_adj(conn_hubs[0], conn_hubs[1], capacity)
 
         try:
             return Connection(
@@ -269,15 +274,6 @@ class Parser:
             raise ParseError(f"{ln}, Validation error '{e}'") from e
 
     @staticmethod
-    def add_adj(hub1: Hub, hub2: Hub) -> None:
+    def add_adj(hub1: Hub, hub2: Hub, capacity: int) -> None:
         for src, dest in [(hub1, hub2), (hub2, hub1)]:
-            if dest.zone == Zone.PRIORITY:
-                weight = 1
-            elif dest.zone == Zone.NORMAL:
-                weight = 1.1
-            elif dest.zone == Zone.RESTRICTED:
-                weight = 2
-            elif dest.zone == Zone.BLOCKED:
-                weight = inf
-
-            src.adj[dest] = weight
+            src.adj[dest] = capacity
