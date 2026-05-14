@@ -93,7 +93,7 @@ class Visualizer(arcade.Window):
             arcade.Text(
                 str(int(hub1.adj[hub2])),
                 (hub1.x + hub2.x) * 100 / 2,
-                (hub1.y + hub2.y) * 100 / 2,
+                (hub1.y + hub2.y) * 100 / 2 + 5,
             ).draw()
 
     def on_draw(self):

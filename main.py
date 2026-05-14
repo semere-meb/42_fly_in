@@ -1,3 +1,4 @@
+from engine import Engine
 from models import Map
 from parser import Parser
 from pathfinder import Pathfinder
@@ -12,12 +13,14 @@ def main() -> None:
 
     pathfinder = Pathfinder(map)
     pathfinder.get_all_paths()
-    # for path in pathfinder.paths:
-    #     for hub in path:
-    #         print(hub.name, end=" => ")
+    pathfinder.cal_path_cost()
+    for length, throughput, cost, path in pathfinder.path_rank:
+        for hub in path:
+            print(hub.name, end=" => ")
+        print(f"[L={length},T={throughput},C={cost}]")
 
-    #     print()
-
+    engine = Engine(map, pathfinder)
+    engine.run()
     vis = Visualizer(map)
     vis.run()
 
