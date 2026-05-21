@@ -100,10 +100,12 @@ class Parser:
                     hub = self.parse_hub(ln, values, is_start=True)
                     hubs.append(hub)
                     start_hub = hub
+                    start_hub.max_drones = float("inf")
                 elif key == "end_hub":
                     hub = self.parse_hub(ln, values, is_end=True)
                     hubs.append(hub)
                     end_hub = hub
+                    end_hub.max_drones = float("inf")
                 elif key == "connection":
                     conn = self.parse_conn(ln, values, hubs, connections)
                     connections.append(conn)
@@ -264,16 +266,9 @@ class Parser:
         if capacity <= 0:
             raise ParseError(f"{ln}, Negative value not allowed.")
 
-        Parser.add_adj(conn_hubs[0], conn_hubs[1], capacity)
-
         try:
             return Connection(
                 hubs=tuple(conn_hubs), max_link_capacity=capacity
             )
         except ValidationError as e:
             raise ParseError(f"{ln}, Validation error '{e}'") from e
-
-    @staticmethod
-    def add_adj(hub1: Hub, hub2: Hub, capacity: int) -> None:
-        for src, dest in [(hub1, hub2), (hub2, hub1)]:
-            src.adj[dest] = capacity

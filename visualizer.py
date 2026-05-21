@@ -47,7 +47,7 @@ class Visualizer(arcade.Window):
 
     def setup(self):
         self.camera = arcade.Camera2D()
-        self.background_color = arcade.csscolor.BLACK
+        self.background_color = arcade.csscolor.LIGHT_CORAL
         self.scene = arcade.Scene()
         self.scene.add_sprite_list("hubs", use_spatial_hash=True)
         self.scene.add_sprite_list("drones")
@@ -91,7 +91,7 @@ class Visualizer(arcade.Window):
                 6,
             )
             arcade.Text(
-                str(int(hub1.adj[hub2])),
+                str(int(self.map.graph[hub1][hub2])),
                 (hub1.x + hub2.x) * 100 / 2,
                 (hub1.y + hub2.y) * 100 / 2 + 5,
             ).draw()

@@ -1,16 +1,64 @@
+from collections import deque
 from typing import List, Tuple
 
 from models import Connection, Hub, Map, Zone
 
 
 class Pathfinder:
-    paths: List[List[Hub]]
-    # length, throughput, cost, path
-    path_rank: List[Tuple[int, int, float, List[Hub]]] = []
     map: Map
+    graph: dict[Hub, dict[Hub, float]]
+    path_rank: List[Tuple[int, int, float, List[Hub]]] = []
 
     def __init__(self, map: Map):
         self.map = map
+        self.graph = map.graph
+
+    def bfs(self, source, sink, parent):
+        visited = {source}
+        queue = deque([source])
+
+        while queue:
+            node = queue.popleft()
+            for neighbor, capactity in self.graph[node].items():
+                if neighbor not in visited and capactity > 0:
+                    visited.add(neighbor)
+                    parent[neighbor] = node
+                    if neighbor == sink:
+                        return True
+                    queue.append(neighbor)
+        return False
+
+    def edmonds_karp(self, source: Hub, sink: Hub):
+        max_flow = 0
+        paths = []
+
+        while True:
+            parent = {}
+
+            if not self.bfs(source, sink, parent):
+                break
+
+            path = []
+            node = sink
+            while node != source:
+                path.append(node)
+                node = parent[node]
+            path.append(source)
+            path.reverse()
+
+            flow = min(
+                self.graph[path[i]][path[i + 1]] for i in range(len(path) - 1)
+            )
+
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
+                self.graph[u][v] -= flow
+                self.graph[v][u] += flow
+
+            max_flow += flow
+            paths.append((flow, path))
+
+        return max_flow, paths
 
     def get_all_paths(self) -> None:
 
@@ -29,8 +77,8 @@ class Pathfinder:
                 candidate_path.reverse()
                 paths.append(candidate_path)
             else:
-                for adj in current.adj:
-                    if adj.zone != Zone.BLOCKED and adj not in visited:
+                for adj in self.graph[current]:
+                    if adj not in visited:
                         dfs_get_path(adj, visited, path)
             path.pop()
             visited.remove(current)
@@ -70,3 +118,9 @@ class Pathfinder:
         self.path_rank = self.path_rank[
             : min(len(self.path_rank), self.map.nb_drones)
         ]
+
+    # def dijkstra(self, source: Hub, sink: Hub) -> List[Hub]:
+    #     visited: List[Hub] = []
+    #     q: List[Hub] = []
+
+    #     return
