@@ -60,13 +60,27 @@ class Map(BaseModel):
     hubs: list[Hub]
     connections: list[Connection]
 
-    graph: dict[Hub, dict[Hub, float]] = {}
+    graph: dict[str, dict[str, float]] = {}
 
     def to_graph(self) -> None:
-        self.graph = {hub: {} for hub in self.hubs if hub.zone != Zone.BLOCKED}
+        graph: dict[str, dict[str, float]] = {}
+
+        for hub in self.hubs:
+            if hub.zone == Zone.BLOCKED:
+                continue
+            graph[f"{hub.name}_in"] = {}
+            graph[f"{hub.name}_out"] = {}
+
+            graph[f"{hub.name}_in"][f"{hub.name}_out"] = hub.max_drones
+            graph[f"{hub.name}_out"][f"{hub.name}_in"] = 0
+
         for conn in self.connections:
             if any([hub.zone == Zone.BLOCKED for hub in conn.hubs]):
                 continue
             hub1, hub2 = conn.hubs
             for src, dst in (hub1, hub2), (hub2, hub1):
-                self.graph[src][dst] = conn.max_link_capacity
+                graph[f"{src.name}_out"][f"{dst.name}_in"] = (
+                    conn.max_link_capacity
+                )
+                graph[f"{dst.name}_in"][f"{src.name}_out"] = 0
+        self.graph = graph
