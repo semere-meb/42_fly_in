@@ -1,126 +1,65 @@
 from collections import deque
-from typing import List, Tuple
 
-from models import Hub, Map
+from graph import Graph
+from models import Hub
 
 
 class Pathfinder:
-    map: Map
-    graph: dict[str, dict[str, float]]
-    path_rank: List[Tuple[int, int, float, List[Hub]]] = []
+    graph: dict[Hub, dict[Hub, list[float]]]  # {src: {dst: [capacity, cost]}}
 
-    def __init__(self, map: Map):
-        self.map = map
-        self.graph = map.graph
+    def __init__(self, graph: Graph):
+        self.graph = graph.graph
 
-    def bfs(self, source: str, sink: str, parent: dict):
-        visited = {source}
-        queue = deque([source])
+    def bfs(
+        self, source: Hub, sink: Hub, parent: dict[Hub, tuple[Hub, float]]
+    ) -> bool:
+        visited: set[Hub] = {source}
+        queue: deque[Hub] = deque([source])
 
         while queue:
             node = queue.popleft()
-            for neighbor, capactity in self.graph[node].items():
+            for neighbor, (capactity, cost) in self.graph[node].items():
                 if neighbor not in visited and capactity > 0:
                     visited.add(neighbor)
-                    parent[neighbor] = node
+                    parent[neighbor] = (node, cost)
                     if neighbor == sink:
                         return True
                     queue.append(neighbor)
         return False
 
-    def edmonds_karp(self, source: str, sink: str):
-        max_flow = 0
-        paths = []
+    def edmonds_karp(
+        self, source: Hub, sink: Hub
+    ) -> tuple[float, list[tuple[float, float, list[Hub]]]]:
+        max_flow: float = 0
+        paths: list[tuple[float, float, list[Hub]]] = []
 
         while True:
-            parent = {}
+            parent: dict[Hub, tuple[Hub, float]] = {}
 
             if not self.bfs(source, sink, parent):
                 break
 
-            path = []
-            node = sink
+            path: list[Hub] = []
+            path_cost: float = 0
+            node: Hub = sink
             while node != source:
                 path.append(node)
-                node = parent[node]
+                node, cost = parent[node]
+                path_cost += cost
             path.append(source)
             path.reverse()
 
-            flow = min(
-                self.graph[path[i]][path[i + 1]] for i in range(len(path) - 1)
+            flow: float = min(
+                self.graph[path[i]][path[i + 1]][0]
+                for i in range(len(path) - 1)
             )
 
             for i in range(len(path) - 1):
                 u, v = path[i], path[i + 1]
-                self.graph[u][v] -= flow
-                self.graph[v][u] += flow
+                self.graph[u][v][0] -= flow
+                self.graph[v][u][0] += flow
 
             max_flow += flow
-            paths.append((flow, path))
+            paths.append((flow, path_cost, path))
 
         return max_flow, paths
-
-    # def get_all_paths(self) -> None:
-
-    #     paths: List[List[Hub]] = []
-
-    #     def dfs_get_path(
-    #         current: Hub,
-    #         visited: set[Hub],
-    #         path: List[Hub],
-    #     ):
-    #         visited.add(current)
-    #         path.append(current)
-
-    #         if current.is_start:
-    #             candidate_path = path.copy()
-    #             candidate_path.reverse()
-    #             paths.append(candidate_path)
-    #         else:
-    #             for adj in self.graph[current]:
-    #                 if adj not in visited:
-    #                     dfs_get_path(adj, visited, path)
-    #         path.pop()
-    #         visited.remove(current)
-
-    #     dfs_get_path(self.map.end, set(), [])
-    #     self.paths = paths
-
-    # def get_conn(self, hub1: Hub, hub2: Hub) -> Connection | None:
-    #     for conn in self.map.connections:
-    #         if set(conn.hubs) == set([hub1, hub2]):
-    #             return conn
-    #     return None
-
-    # def cal_path_cost(self) -> None:
-    #     for path in self.paths:
-    #         cost = 0
-    #         min_conn_capacitiy = float("inf")
-
-    #         for i in range(len(path) - 1):
-    #             conn = self.get_conn(path[i], path[i + 1])
-    #             if conn:
-    #                 if path[i + 1].zone == Zone.RESTRICTED:
-    #                     cost += 2
-    #                 if path[i + 1].zone == Zone.PRIORITY:
-    #                     cost += 0.999
-    #                 else:
-    #                     cost += 1
-    #                 min_conn_capacitiy = min(
-    #                     min_conn_capacitiy, conn.max_link_capacity
-    #                 )
-    #         min_hub_capacity = min(hub.max_drones for hub in path)
-
-    #         length = len(path) - 1
-    #         throughput = int(min(min_hub_capacity, min_conn_capacitiy))
-    #         self.path_rank.append((length, throughput, cost, path))
-    #     self.path_rank = sorted(self.path_rank, key=lambda x: x[2])
-    #     self.path_rank = self.path_rank[
-    #         : min(len(self.path_rank), self.map.nb_drones)
-    #     ]
-
-    # def dijkstra(self, source: Hub, sink: Hub) -> List[Hub]:
-    #     visited: List[Hub] = []
-    #     q: List[Hub] = []
-
-    #     return

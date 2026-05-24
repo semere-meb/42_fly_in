@@ -1,4 +1,5 @@
 import re
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -23,7 +24,7 @@ class Parser:
                 )
             return (
                 string[: match.start()].strip(),
-                string[match.start() :].strip(),
+                string[match.start() :].strip(),  # noqa: E203
             )
         else:
             return (string.strip(), "")
@@ -100,12 +101,12 @@ class Parser:
                     hub = self.parse_hub(ln, values, is_start=True)
                     hubs.append(hub)
                     start_hub = hub
-                    start_hub.max_drones = float("inf")
+                    start_hub.max_drones = nb_drones
                 elif key == "end_hub":
                     hub = self.parse_hub(ln, values, is_end=True)
                     hubs.append(hub)
                     end_hub = hub
-                    end_hub.max_drones = float("inf")
+                    end_hub.max_drones = nb_drones
                 elif key == "connection":
                     conn = self.parse_conn(ln, values, hubs, connections)
                     connections.append(conn)
@@ -176,7 +177,10 @@ class Parser:
                     color_name = webcolors.name_to_rgb(val)
                     color = (*color_name, 255)
                 except ValueError:
-                    print("Color not recognized, defaulting to blue.")
+                    print(
+                        "Color not recognized, defaulting to blue.",
+                        file=sys.stderr,
+                    )
 
             elif key == "max_drones":
                 try:
@@ -236,7 +240,7 @@ class Parser:
                 raise ParseError(f"{ln}, Hub '{hub_name}' not found.")
 
         if any(
-            set(conn_hubs) == set([hub.name for hub in conn.hubs])
+            set(conn_hubs) == set([hub for hub in conn.hubs])
             for conn in connections
         ):
             raise ParseError(
