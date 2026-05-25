@@ -128,7 +128,7 @@ class Parser:
             end=end_hub,
             hubs=hubs,
             connections=connections,
-            drones=[Drone(hub=start_hub) for _ in range(nb_drones)],
+            drones=[Drone(id=i) for i in range(nb_drones)],
         )
 
     def parse_hub(

@@ -1,7 +1,15 @@
 from collections import deque
+from dataclasses import dataclass
 
 from graph import Graph
 from models import Hub
+
+
+@dataclass
+class Path:
+    flow: int
+    cost: float
+    hubs: list[Hub]
 
 
 class Pathfinder:
@@ -27,11 +35,9 @@ class Pathfinder:
                     queue.append(neighbor)
         return False
 
-    def edmonds_karp(
-        self, source: Hub, sink: Hub
-    ) -> tuple[float, list[tuple[float, float, list[Hub]]]]:
-        max_flow: float = 0
-        paths: list[tuple[float, float, list[Hub]]] = []
+    def edmonds_karp(self, source: Hub, sink: Hub) -> tuple[float, list[Path]]:
+        max_flow: int = 0
+        paths: list[Path] = []
 
         while True:
             parent: dict[Hub, tuple[Hub, float]] = {}
@@ -49,9 +55,11 @@ class Pathfinder:
             path.append(source)
             path.reverse()
 
-            flow: float = min(
-                self.graph[path[i]][path[i + 1]][0]
-                for i in range(len(path) - 1)
+            flow: int = int(
+                min(
+                    self.graph[path[i]][path[i + 1]][0]
+                    for i in range(len(path) - 1)
+                )
             )
 
             for i in range(len(path) - 1):
@@ -60,6 +68,6 @@ class Pathfinder:
                 self.graph[v][u][0] += flow
 
             max_flow += flow
-            paths.append((flow, path_cost, path))
+            paths.append(Path(flow, path_cost, path))
 
         return max_flow, paths

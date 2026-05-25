@@ -2,6 +2,14 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from errors import AppError
+
+
+class DroneState(Enum):
+    IN_HUB = "in_hub"
+    IN_TRANSIT = "in_transit"
+    DONE = "done"
+
 
 class Zone(Enum):
     NORMAL = "normal"
@@ -30,7 +38,7 @@ class Hub(BaseModel):
 
 
 class Connection(BaseModel):
-    hubs: tuple[Hub, ...] = Field(min_length=2, max_length=2)
+    hubs: tuple[Hub, Hub] = Field(min_length=2, max_length=2)
     max_link_capacity: int = Field(default=1)
 
     def __hash__(self) -> int:
@@ -38,8 +46,10 @@ class Connection(BaseModel):
 
 
 class Drone(BaseModel):
-    hub: Hub
-    path: list[Hub] = Field(default=[])
+    id: int
+    current: Hub | None = None
+    path: list[Hub] = []
+    state: DroneState = DroneState.IN_HUB
 
 
 class Map(BaseModel):
@@ -52,3 +62,9 @@ class Map(BaseModel):
     connections: list[Connection]
 
     graph: dict[str, dict[str, float]] = {}
+
+    def get_hub(self, name: str) -> Hub:
+        for hub in self.hubs:
+            if hub.name == name:
+                return hub
+        raise AppError
