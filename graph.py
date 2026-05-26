@@ -2,15 +2,21 @@ from models import Hub, Map, Zone
 
 
 class Graph:
-    # {hub: {hub, [capacity, cost]}}
     source: Hub
     sink: Hub
-    graph: dict[Hub, dict[Hub, list[float]]]
+    # {hub: {hub, [capacity, cost]}}
+    flow_network: dict[Hub, dict[Hub, list[float]]]
+    graph_network: dict[Hub, dict[Hub, float]]
 
     def __init__(self, map: Map) -> None:
+        self.map = map
+        self.get_graph_network()
+        self.get_flow_network()
+
+    def get_flow_network(self) -> None:
         graph: dict[Hub, dict[Hub, list[float]]] = {}
 
-        for hub in map.hubs:
+        for hub in self.map.hubs:
             if hub.zone == Zone.BLOCKED:
                 continue
             in_node = hub.model_copy(update={"name": f"{hub.name}-in"})
@@ -34,7 +40,7 @@ class Graph:
             if hub.is_end:
                 self.sink = in_node
 
-        for conn in map.connections:
+        for conn in self.map.connections:
             if any([hub.zone == Zone.BLOCKED for hub in conn.hubs]):
                 continue
             for src, dst in conn.hubs, reversed(conn.hubs):
@@ -53,4 +59,15 @@ class Graph:
                 graph[src_out][dst_in] = [conn.max_link_capacity, cost]
                 graph[dst_in][src_out] = [0, 1]
 
-        self.graph = graph
+        self.flow_network = graph
+
+    def get_graph_network(self) -> None:
+        graph: dict[Hub, dict[Hub, float]] = {}
+
+        for conn in self.map.connections:
+            src, dst = conn.hubs
+            if src not in graph:
+                graph[src] = {}
+            graph[src][dst] = conn.max_link_capacity
+
+        self.graph_network = graph

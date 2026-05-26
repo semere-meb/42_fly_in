@@ -15,8 +15,11 @@ class Path:
 class Pathfinder:
     graph: dict[Hub, dict[Hub, list[float]]]  # {src: {dst: [capacity, cost]}}
 
+    max_flow: int
+
     def __init__(self, graph: Graph):
-        self.graph = graph.graph
+        self.graph = graph.flow_network
+        self.max_flow = 0
 
     def bfs(
         self, source: Hub, sink: Hub, parent: dict[Hub, tuple[Hub, float]]
@@ -35,7 +38,7 @@ class Pathfinder:
                     queue.append(neighbor)
         return False
 
-    def edmonds_karp(self, source: Hub, sink: Hub) -> tuple[float, list[Path]]:
+    def get_paths(self, source: Hub, sink: Hub) -> list[Path]:
         max_flow: int = 0
         paths: list[Path] = []
 
@@ -70,4 +73,5 @@ class Pathfinder:
             max_flow += flow
             paths.append(Path(flow, path_cost, path))
 
-        return max_flow, paths
+        self.maxf_flow = max_flow
+        return paths

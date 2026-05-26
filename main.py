@@ -3,6 +3,7 @@ from graph import Graph
 from parser import Parser
 from pathfinder import Pathfinder
 from scheduler import Scheduler
+from visualizer import Visualizer
 
 
 def main() -> None:
@@ -11,15 +12,16 @@ def main() -> None:
     map = parser.parse_map()
     graph = Graph(map)
     pathfinder = Pathfinder(graph)
-    _, paths = pathfinder.edmonds_karp(graph.source, graph.sink)
+    paths = pathfinder.get_paths(graph.source, graph.sink)
 
     scheduler = Scheduler(map, paths)
     scheduler.assign_paths()
 
-    engine = Engine(map=map)
+    engine = Engine(map)
     engine.run()
 
-    # exit(len(map.drones[-1].path) - 1)
+    vis = Visualizer(map, graph, engine.res)
+    vis.run()
 
 
 if __name__ == "__main__":
