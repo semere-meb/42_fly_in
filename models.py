@@ -6,8 +6,8 @@ from errors import AppError
 
 
 class DroneState(Enum):
-    IN_HUB = "in_hub"
-    IN_TRANSIT = "in_transit"
+    NOT_DEPARTED = "not_departed "
+    EN_ROUTE = "in_hub"
     DONE = "done"
 
 
@@ -47,9 +47,10 @@ class Connection(BaseModel):
 
 class Drone(BaseModel):
     id: int
+    in_transit: bool = False
     current: Hub | None = None
     path: list[Hub] = []
-    state: DroneState = DroneState.IN_HUB
+    state: DroneState = DroneState.NOT_DEPARTED
 
 
 class Map(BaseModel):

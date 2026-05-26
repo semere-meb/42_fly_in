@@ -1,4 +1,3 @@
-from errors import SchedulerError
 from models import Drone, Hub, Map
 from pathfinder import Path
 
