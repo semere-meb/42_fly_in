@@ -22,6 +22,7 @@ class Hub(BaseModel):
     name: str
     x: int
     y: int
+    drones: list["Drone"] = []
 
     is_start: bool = Field(default=False)
     is_end: bool = Field(default=False)
@@ -40,6 +41,7 @@ class Hub(BaseModel):
 class Connection(BaseModel):
     hubs: tuple[Hub, Hub] = Field(min_length=2, max_length=2)
     max_link_capacity: int = Field(default=1)
+    drones: list["Drone"] = []
 
     def __hash__(self) -> int:
         return hash(self.hubs)

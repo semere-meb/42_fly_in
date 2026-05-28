@@ -15,17 +15,14 @@ class Engine:
         while any([drone.state != DroneState.DONE for drone in drones]):
             line: str = ""
             for drone in drones:
-                # skip if done
                 if drone.state == DroneState.DONE:
                     continue
 
                 curr = drone.path[i]
 
-                # update if started
                 if curr != self.map.start:
                     drone.state = DroneState.EN_ROUTE
 
-                # check if in_transit
                 if curr.zone == Zone.RESTRICTED:
                     drone.in_transit = not drone.in_transit
 
@@ -35,7 +32,6 @@ class Engine:
                 elif drone.state == DroneState.EN_ROUTE:
                     line += f"D{drone.id}-<{curr.name}> "
 
-                # check if done
                 if i == len(drone.path) - 1:
                     drone.state = DroneState.DONE
 

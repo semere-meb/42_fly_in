@@ -46,7 +46,7 @@ format:
 	uvx ruff format $(SRC) $(STUB_DIR) $(TEST_DIR)
 
 debug: $(VENV)
-	uv run python -m pdb main.py
+	uv run python -m pdb main.py -m maps/medium/03_priority_puzzle.txt
 
 re: clean install
 
