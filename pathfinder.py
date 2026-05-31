@@ -7,23 +7,45 @@ from models import Hub
 
 @dataclass
 class Path:
+    """
+    A simple class to represents a path and its cost and flow metadata.
+    """
+
     flow: int
     cost: float
     hubs: list[Hub]
 
 
 class Pathfinder:
-    graph: dict[Hub, dict[Hub, list[float]]]  # {src: {dst: [capacity, cost]}}
+    """
+
+    A class to find and contain strategic paths.
+    """
+
+    graph: dict[Hub, dict[Hub, list[float]]]
 
     max_flow: int
 
     def __init__(self, graph: Graph):
-        self.graph = graph.flow_network
+        self.graph = graph.graph
         self.max_flow = 0
 
     def bfs(
         self, source: Hub, sink: Hub, parent: dict[Hub, tuple[Hub, float]]
     ) -> bool:
+        """
+
+        bfs to augument the path, advance to the next breadth/neighbors.
+
+        Args:
+          source: Hub: The start hub.
+          sink: Hub: The end hub.
+          parent: dict[Hub, tuple[Hub, float]]: The previous hub and the cost
+            between the current one.
+
+        Returns: returns true on reaching the end hub.
+
+        """
         visited: set[Hub] = {source}
         queue: deque[Hub] = deque([source])
 
@@ -39,6 +61,17 @@ class Pathfinder:
         return False
 
     def get_paths(self, source: Hub, sink: Hub) -> list[Path]:
+        """
+        A max-flow algorithm to find the shortest flow-carrying paths.
+
+
+        Args:
+          source: Hub: the source hub.
+          sink: Hub: the destination hub.
+
+        Returns: a list of the strategic (shortest flow-carrying) paths.
+
+        """
         max_flow: int = 0
         paths: list[Path] = []
 

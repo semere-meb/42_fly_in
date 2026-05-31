@@ -11,10 +11,26 @@ from models import Connection, Drone, Hub, Map, Zone
 
 
 class Parser:
+    """
+    Parses the
+    """
+
     map_path: Path
 
     @staticmethod
     def _separate_line(ln: int, string: str) -> tuple[str, str]:
+        """
+
+        splits the mandatory and optional ([]) segments of the current line.
+
+        Args:
+          ln: int: the line number
+          string: str: the line string
+
+        Returns:
+          tuple[str, str]: the mandatory and the optional metadata strings.
+
+        """
         match = re.search(r"\[.*\]", string)
 
         if match:
@@ -31,6 +47,17 @@ class Parser:
 
     @staticmethod
     def _get_hub_by_name(name: str, hubs: list[Hub]) -> Hub | None:
+        """
+        a utility functioin to get a hub from the so far built hubs.
+
+        Args:
+          name: str: the name of the hub
+          hubs: list[Hub]: a list of all the hubs built so far
+
+        Returns:
+            Hub | None: the hub with the same name or None if not found.
+
+        """
         res_hub = None
 
         for hub in hubs:
@@ -40,6 +67,10 @@ class Parser:
         return res_hub
 
     def parse_args(self) -> None:
+        """
+        parses the command-line arguments.
+
+        """
 
         map_default: str = "maps/easy/01_linear_path.txt"
 
@@ -58,6 +89,13 @@ class Parser:
         self.map_path = Path(parser.parse_args().map)
 
     def parse_map(self) -> Map:
+        """
+        Parses the text map into the the Map model.
+
+        Returns:
+          Map: the entire map object built.
+
+        """
         hubs: list[Hub] = []
         connections: list[Connection] = []
 
@@ -138,6 +176,18 @@ class Parser:
         is_start: bool = False,
         is_end: bool = False,
     ) -> Hub:
+        """
+        Parses a single hub definition entry/line and returns a Hub object.
+
+        Args:
+          ln: int: the line number.
+          string: str: the line defining the hub entry
+          is_start: bool:  (Default value = False) whether the hub in start hub
+          is_end: bool:  (Default value = False) whether the hub is end hub
+
+        Returns: a Hub object to represent the hub.
+
+        """
         zone = Zone.NORMAL
         color = 255, 255, 255, 255
         max_drones = 1
@@ -217,6 +267,19 @@ class Parser:
         hubs: list[Hub],
         connections: list[Connection],
     ) -> Connection:
+        """
+        Parses a line defining a connection and builds a connection.
+
+        Args:
+          ln: int: the line number
+          string: str: the string line entry in the map text
+          hubs: list[Hub]: the list of all hubs, used for lookup
+          connections: list[Connection]: the list of all connections built so
+            far, used to check for duplicates.
+
+        Returns: the connection object.
+
+        """
         conn_hubs: list[Hub] = []
         capacity: int = 1
 

@@ -2,6 +2,11 @@ from models import DroneState, Map, Zone
 
 
 class Engine:
+    """
+    Moves the drones through the map.
+
+    """
+
     map: Map
     res: str
 
@@ -10,6 +15,10 @@ class Engine:
         self.res = ""
 
     def run(self) -> None:
+        """
+        Prints the turns as the drones move through the hubs, turn-by-turn.
+
+        """
         drones = self.map.drones
         i = 1
         while any([drone.state != DroneState.DONE for drone in drones]):
@@ -38,4 +47,4 @@ class Engine:
             i += 1
             if line:
                 self.res += line + "\n"
-        print(self.res)
+        print(self.res.strip())

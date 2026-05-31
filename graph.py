@@ -2,18 +2,26 @@ from models import Hub, Map, Zone
 
 
 class Graph:
+    """
+    The graph representation of the map.
+    flow_network is the hub to hub graph, but with the hubs represented to
+    reflect their capacities and cost, respectively, used for flow calculation.
+    """
+
     source: Hub
     sink: Hub
-    # {hub: {hub, [capacity, cost]}}
-    flow_network: dict[Hub, dict[Hub, list[float]]]
-    graph_network: dict[Hub, dict[Hub, float]]
+    graph: dict[Hub, dict[Hub, list[float]]]
 
     def __init__(self, map: Map) -> None:
         self.map = map
-        self.get_graph_network()
         self.get_flow_network()
 
     def get_flow_network(self) -> None:
+        """
+        Uses node-splitting technique to make a hub's capacity native to the
+        max flow calculation.
+
+        """
         graph: dict[Hub, dict[Hub, list[float]]] = {}
 
         for hub in self.map.hubs:
@@ -59,15 +67,4 @@ class Graph:
                 graph[src_out][dst_in] = [conn.max_link_capacity, cost]
                 graph[dst_in][src_out] = [0, 1]
 
-        self.flow_network = graph
-
-    def get_graph_network(self) -> None:
-        graph: dict[Hub, dict[Hub, float]] = {}
-
-        for conn in self.map.connections:
-            src, dst = conn.hubs
-            if src not in graph:
-                graph[src] = {}
-            graph[src][dst] = conn.max_link_capacity
-
-        self.graph_network = graph
+        self.graph = graph

@@ -7,6 +7,12 @@ from visualizer import Visualizer
 
 
 def main() -> None:
+    """
+    Entry point for the simulation, starts parsing the args and then the map
+    before finding the strategic paths and letting the scheduler assign the
+    drones to these paths. Finally, it runs the visualizer.
+
+    """
     parser = Parser()
     parser.parse_args()
     map = parser.parse_map()
@@ -20,7 +26,7 @@ def main() -> None:
     engine = Engine(map)
     engine.run()
 
-    vis = Visualizer(map, graph, engine.res)
+    vis = Visualizer(map)
     vis.run()
 
 

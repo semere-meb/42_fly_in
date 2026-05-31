@@ -3,6 +3,10 @@ from pathfinder import Path
 
 
 class Scheduler:
+    """
+    Scheduler class to the paths from pathfinder.
+    """
+
     paths: list[Path] = []
     drones: list[Drone]
     map: Map
@@ -27,6 +31,10 @@ class Scheduler:
             self.paths.append(Path(path.flow, path.cost, hubs))
 
     def assign_paths(self) -> None:
+        """
+        Assigns the drones to the paths using staggering after reranking after
+        assignments based on cost.
+        """
         i = 0
         while i < len(self.drones):
             self.paths.sort(key=lambda path: path.cost)
