@@ -72,7 +72,6 @@ class Pathfinder:
         Returns: a list of the strategic (shortest flow-carrying) paths.
 
         """
-        max_flow: int = 0
         paths: list[Path] = []
 
         while True:
@@ -103,8 +102,7 @@ class Pathfinder:
                 self.graph[u][v][0] -= flow
                 self.graph[v][u][0] += flow
 
-            max_flow += flow
+            self.max_flow += flow
             paths.append(Path(flow, path_cost, path))
 
-        self.maxf_flow = max_flow
         return paths

@@ -42,12 +42,18 @@ class DroneSprite(arcade.Sprite):
         Returns: None
 
         """
-        prev_hub = self.drone.path[prev]
-        curr_hub = self.drone.path[curr]
+        prev_hub = None
+        curr_hub = None
 
-        if self.drone in prev_hub.drones:
+        if prev < len(self.drone.path):
+            prev_hub = self.drone.path[prev]
+
+        if curr < len(self.drone.path):
+            curr_hub = self.drone.path[curr]
+
+        if prev_hub and self.drone in prev_hub.drones:
             prev_hub.drones.remove(self.drone)
-        if not is_in_transit:
+        if curr_hub and not is_in_transit:
             curr_hub.drones.append(self.drone)
             if self.conn:
                 self.conn.drones.remove(self.drone)
@@ -293,6 +299,11 @@ class Visualizer(arcade.Window):
         elif symbol == arcade.key.RIGHT:
             if self.turn < self.turn_max:
                 self.turn += 1
+                self.next_turn(prev)
+
+        elif symbol == arcade.key.LEFT:
+            if self.turn > 0:
+                self.turn -= 1
                 self.next_turn(prev)
 
         elif symbol == arcade.key.Q:
