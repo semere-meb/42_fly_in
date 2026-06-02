@@ -45,3 +45,16 @@ class Scheduler:
             path.cost += 1
             path.hubs.insert(0, self.map.start)
             i += path.flow
+
+        self.align_paths()
+
+    def align_paths(self) -> None:
+        """
+        Padds the paths with the end hub to the length of the longest
+        path so as to easily add and remove drones from hubs.
+        """
+        max_turn = max(len(path.hubs) for path in self.paths) - 1
+
+        for drone in self.drones:
+            for _ in range(max_turn - len(drone.path)):
+                drone.path.append(self.map.end)
