@@ -1,3 +1,4 @@
+from colorama.ansi import Fore
 from models import DroneState, Map, Zone
 
 
@@ -12,7 +13,6 @@ class Engine:
 
     def __init__(self, map: Map):
         self.map = map
-        self.res = ""
 
     def run(self) -> None:
         """
@@ -22,7 +22,6 @@ class Engine:
         drones = self.map.drones
         i = 1
         while any([drone.state != DroneState.DONE for drone in drones]):
-            line: str = ""
             for drone in drones:
                 if drone.state == DroneState.DONE:
                     continue
@@ -35,16 +34,18 @@ class Engine:
                 if curr.zone == Zone.RESTRICTED:
                     drone.in_transit = not drone.in_transit
 
+                print(f"{Fore.BLUE}D{drone.id}{Fore.RESET}-", end="")
                 if drone.state == DroneState.EN_ROUTE and drone.in_transit:
                     prev = drone.path[i - 1]
-                    line += f"D{drone.id}-<{prev.name}-{curr.name}> "
+                    print(
+                        f"{Fore.YELLOW}<{prev.name}-{curr.name}> {Fore.RESET}",
+                        end="",
+                    )
                 elif drone.state == DroneState.EN_ROUTE:
-                    line += f"D{drone.id}-<{curr.name}> "
+                    print(f"{Fore.CYAN}<{curr.name}> {Fore.RESET}", end="")
 
                 if i == len(drone.path) - 1:
                     drone.state = DroneState.DONE
 
             i += 1
-            if line:
-                self.res += line + "\n"
-        print(self.res.strip())
+            print()
