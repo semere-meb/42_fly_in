@@ -186,6 +186,11 @@ class Visualizer(arcade.Window):
 
         """
         if 0 <= self.turn <= self.turn_max:
+            for hub in self.map.hubs:
+                hub.drones.clear()
+            for conn in self.map.connections:
+                conn.drones.clear()
+
             for drone in self.scene["drones"]:
                 drone.move_drone(self.turn, prev)
 

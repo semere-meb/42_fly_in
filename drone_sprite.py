@@ -1,6 +1,6 @@
 import arcade
 
-from models import Connection, Drone, Map, Zone
+from models import Drone, Map, Zone
 
 
 class DroneSprite(arcade.Sprite):
@@ -10,85 +10,57 @@ class DroneSprite(arcade.Sprite):
 
     drone: Drone
     label: str
-    in_transit: bool
     map: Map
-    conn: Connection | None
 
     def __init__(self, drone: Drone, map: Map):
+        """
+        Initializes the drone sprite.
+
+        Args:
+          drone: Drone: the drone model object.
+          map: Map: the map model object.
+        """
         self.drone = drone
         self.map = map
-        self.conn = None
 
         super().__init__("images/ship_F.png", scale=0.2, angle=90)
 
         self.label = str(self.drone.id)
         self.center_x = self.drone.path[0].x * 100
         self.center_y = self.drone.path[0].y * 100
-        self.in_transit = False
-
-    def update_hubs(self, curr: int, prev: int, is_in_transit: bool) -> None:
-        """
-        Removes the drone from the prev hub and adds it to the current hub.
-
-        Args:
-          curr: int: the index of the current hub in the drone's path.
-          prev: int: the index of the previous hub in the drone's path.
-          is_in_transit: bool: If the drone is in transit, it just removes the
-            drone from the previous hub.
-
-        Returns: None
-
-        """
-
-        prev_hub = self.drone.path[prev]
-        curr_hub = self.drone.path[curr]
-
-        # remove from previous hub/conn
-        if self.conn:
-            self.conn.drones.remove(self.drone)
-            self.conn = None
-        elif self.drone in prev_hub.drones:
-            prev_hub.drones.remove(self.drone)
-
-        # add to current hub/conn
-        if not is_in_transit:
-            curr_hub.drones.append(self.drone)
-        else:
-            conn = [
-                conn
-                for conn in self.map.connections
-                if set(conn.hubs) == set([prev_hub, curr_hub])
-            ]
-            if conn:
-                conn[0].drones.append(self.drone)
-                self.conn = conn[0]
 
     def move_drone(self, turn: int, prev: int) -> None:
         """
-
-        Updates the drone sprite's coordinates and calls update_hub to remove
-        or add the drone to the correct hub.
+        Updates the drone sprite's coordinates and registers the drone
+        to the correct hub or connection for the current turn.
 
         Args:
-          turn: int: the curent turn.
-          prev: int: the prev turn.
-
-        Returns: None
-
+          turn: int: the current turn index.
+          prev: int: the previous turn index.
         """
         if 0 <= turn < len(self.drone.path):
-            if self.drone.path[turn].zone == Zone.RESTRICTED:
-                self.in_transit = not self.in_transit
+            in_transit: bool = False
+            for i in range(1, turn + 1):
+                if i < len(self.drone.path):
+                    if self.drone.path[i].zone == Zone.RESTRICTED:
+                        in_transit = not in_transit
 
-            if self.in_transit:
-                self.center_x = (
-                    self.drone.path[turn - 1].x + self.drone.path[turn].x
-                ) * 50
-                self.center_y = (
-                    self.drone.path[turn - 1].y + self.drone.path[turn].y
-                ) * 50
+            curr_hub = self.drone.path[turn]
+
+            if in_transit:
+                prev_hub = self.drone.path[turn - 1]
+                self.center_x = (prev_hub.x + curr_hub.x) * 50
+                self.center_y = (prev_hub.y + curr_hub.y) * 50
+
+                conn = [
+                    c
+                    for c in self.map.connections
+                    if set(c.hubs) == set([prev_hub, curr_hub])
+                ]
+                if conn:
+                    conn[0].drones.append(self.drone)
             else:
-                self.center_x = self.drone.path[turn].x * 100
-                self.center_y = self.drone.path[turn].y * 100
+                self.center_x = curr_hub.x * 100
+                self.center_y = curr_hub.y * 100
 
-            self.update_hubs(turn, prev, self.in_transit)
+                curr_hub.drones.append(self.drone)
